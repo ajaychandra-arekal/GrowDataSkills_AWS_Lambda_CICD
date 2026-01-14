@@ -14,11 +14,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Install dependencies
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install system utilities
       run: |
         sudo apt-get update
-        sudo apt-get install -y python3.11 python3.11-venv python3-pip jq zip
-        pip3 install boto3
+        sudo apt-get install -y jq zip
+
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip
+        pip install boto3
+
 
     - name: Set environment variables
       id: set-env-vars
@@ -36,7 +46,7 @@ jobs:
     - name: Package Lambda Function
       run: |
         cd lambda_function
-        python3.11 -m venv venv
+        python -m venv venv
         source venv/bin/activate
         mkdir package
         pip install --no-cache-dir -r requirements.txt -t ./package
@@ -44,6 +54,7 @@ jobs:
         cd package
         zip -r ../../lambda.zip .
         cd ../..
+
 
     - name: Deploy to AWS Lambda
       env:
